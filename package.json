@@ -1,0 +1,34 @@
+{
+    "name": "notebook",
+    "prouctName": "notebook",
+    "version": "0.1.0",
+    "description": "Notebook provides you with effortless note taking & notepads for Atom.",
+    "keywords": [
+        "notebook",
+        "notepad",
+        "scratchpad",
+        "note taking",
+        "notes"
+    ],
+    "homepage": "https://github.com/skulled/notebook",
+    "main": "./lib/notebook",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/skulled/notebook.git"
+    },
+    "bugs": {
+        "url": "https://github.com/skulled/notebook/issues"
+    },
+    "licenses": [ {
+        "type": "MIT",
+        "url": "http://github.com/skulled/notebook/raw/master/LICENSE.md"
+    } ],
+    "engines": {
+        "atom": ">0.50.0"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+    },
+    "private": true
+}
