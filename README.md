@@ -2,6 +2,8 @@
 
 Notebook offers you a hassle free way to open up editor windows for note taking/rough usage or saving content for later usage/reference as notepads.
 
+It stores your content separately from your workspace/project so there is no need to worry about extra files cluttering up your workspace/project folders.
+
 ![Notepad](https://github.com/skulled/notebook/raw/master/docs/assets/images/notepad.png)
 
 > _Although every effort is made to keep things as stable as possible, please do note that the package is under constant development so there might be occasional bugs. If you run across any issues, please [add an issue](https://github.com/skulled/notebook/issues/new) with the details._

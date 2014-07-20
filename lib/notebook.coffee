@@ -16,11 +16,17 @@ module.exports =
 
     ### DEACTIVATE ###
     activate: ( state ) ->
-        # Setup the Notepads object
-        @notepads = new Notepads()
+        # We only want to activate the package if there is a valid project
+        # Not handling atom being loaded without a project at this point - TODO
+        if atom.project.getPath()
+            # Setup the Notepads object
+            @notepads = new Notepads()
 
-        # Call initialize to setup commands & event handlers
-        @initialize()
+            # Call initialize to setup commands & event handlers
+            @initialize()
+        else
+            # Throw an error for the benefit of package manager activePackage
+            throw { stack: "- Notebook is active & functional only with a valid project open" }
 
     ### INITIALIZE ###
     initialize: ->
