@@ -3,6 +3,9 @@
 fs = require "fs"
 path = require "path"
 
+# notebook
+SaveNotepadToProjectView = null
+
 ### EXPORTS ###
 module.exports =
     class Notepads
@@ -28,43 +31,8 @@ module.exports =
         ### ACTIONS ###
         ### NEW ###
         new: ->
-            # Get the saved notepads for the project
-            savedNotepads = @getSaved()
-
-            # Get currently open notepads even though they might not be persistent,
-            # this is to avoid opening new notepads with same paths
-            openNotepads = @getOpen()
-
-            # If there are no saved or open notepads, start with 1
-            # Use Case: No saved or open(temp) notepads
-            if savedNotepads.length is 0 and openNotepads.length is 0
-                # Start at notepad index 1
-                notepadFile = "notepad-1"
-            else
-                # Check if we there are both saved and open notepads & their length matches
-                # Use Case: All open notepads are saved, so new one needed
-                if savedNotepads.length is openNotepads.length
-                    # Set the next notepad index to saved + 1
-                    notepadFile = "notepad-#{savedNotepads.length + 1}"
-                else
-                    # Check if we have more saved notepads then open ones
-                    # Use Case: Saved notepads present, but not all are open, in which case
-                    # we can work off the saved notepads length safely
-                    if savedNotepads.length > openNotepads.length
-                        # Set the next notepad index to saved + 1
-                        notepadFile = "notepad-#{savedNotepads.length + 1}"
-                    else
-                        # Use Case: We have more open notepads than saved, which means
-                        # there is already at least one empty notepad, just switch to the
-                        # first open notepad which is unsaved and don't open a new one
-                        for unsavedNotepad in openNotepads
-                            # Make sure it is not a saved notepad
-                            if unsavedNotepad not in savedNotepads
-                                # Set the notepad file to this open notepad
-                                notepadFile = unsavedNotepad
-
-                                # We found the first unsaved, get out at this point
-                                break
+            # Get the next notepad file name
+            notepadFile = @getNewNotepadFileName()
 
             # Set the title and the note pad file path
             notepadPath = @getPath( notepadFile )
@@ -118,13 +86,26 @@ module.exports =
 
                     # Check if this notepad is already open by any chance
                     if notepadFile not in openNotepads
-                        # Open the note pad
-                        atom.project.open( notepadFilePath ).then ( notepadEditor ) =>
-                            # Activate the note pad
-                            atom.workspace.getActivePane().activateItem( notepadEditor )
+                        # Let us check here if the notepad has any actual content, we are going to
+                        # clean it up if it has no verifiable content -> non-whitespace characters
+                        # in it, this is to avoid keeping around notepads with empty content, and
+                        # them always opening up on notebook:open-notepads.
+                        #
+                        # This happens only for saved notepads, which are not yet open. If the
+                        # empty saved notepad is already open, we don't touch it and leave it as is
+                        if @isNotepadEmpty( notepadFilePath ) is true
+                            # This is possibly? an empty notepad with no valid content, let us
+                            # not open it, and go one step further and remove it as well to tidy up
+                            # and unclutter the notepads storage
+                            @remove( notepadFilePath )
+                        else
+                            # Open the note pad
+                            atom.project.open( notepadFilePath ).then ( notepadEditor ) =>
+                                # Activate the note pad
+                                atom.workspace.getActivePane().activateItem( notepadEditor )
 
-                            # Auto-save on change
-                            notepadEditor.buffer.on "changed", => @save( notepadEditor )
+                                # Auto-save on change
+                                notepadEditor.buffer.on "changed", => @save( notepadEditor )
             else
                 # Check if there are unsaved notepad buffers, if there are
                 # just switch to the first one there, don't open another one
@@ -132,14 +113,6 @@ module.exports =
                 # one, both the cases are handled properly by the `notebook:new-notepad`
                 # so just call it
                 @new()
-
-        ### SAVE ###
-        save: ( notepadToSave ) ->
-            # Save the notepad
-            notepadToSave.save()
-
-            # Update the file path since it reverts from the core at this point
-            @updateDisplayPath()
 
         ### CLOSE ###
         close: ->
@@ -154,6 +127,19 @@ module.exports =
                 if path.dirname( currentEditor.getPath() ) is @getProjectNotepadsPath()
                     # Close the item in the pane
                     atom.workspace.getActivePane().destroyItem( currentEditor )
+
+                    # Let us check here if the notepad just closed has any actual content, we are
+                    # going to clean it up if it has no verifiable content -> non-whitespace
+                    # characters in it, this is to avoid keeping around notepads with empty content,
+                    # and them always opening up on notebook:open-notepads.
+                    #
+                    # This happens only for saved notepads, which are not yet open. If the
+                    # empty saved notepad is already open, we don't touch it and leave it as is
+                    if @isNotepadSaved( currentEditor.getPath() ) is true and @isNotepadEmpty( currentEditor.getPath() ) is true
+                        # This is possibly? an empty notepad with no valid content, let us
+                        # not open it, and go one step further and remove it as well to tidy up
+                        # and unclutter the notepads storage
+                        @remove( currentEditor.getPath() )
 
         ### DELETE ###
         delete: ->
@@ -238,6 +224,15 @@ module.exports =
                         # Purge the notepad completely
                         @remove( @getPath( notepadFile ) )
 
+        ### INTERNAL ACTIONS ###
+        ### SAVE ###
+        save: ( notepadToSave ) ->
+            # Save the notepad
+            notepadToSave.save()
+
+            # Update the file path since it reverts from the core at this point
+            @updateDisplayPath()
+
         ### REMOVE ###
         remove: ( notepadFilePath ) ->
             # Destroy the notepad completely
@@ -262,20 +257,21 @@ module.exports =
         ### COLLECTIONS ###
         ### GET SAVED ###
         getSaved: ->
-            # Project notepads path
-            projectNotepadsPath = @getProjectNotepadsPath()
-
-            # Check if we already have notepads for this project
-            notepads_exist = fs.existsSync projectNotepadsPath
-
             # Set the notepads for the current project
-            projectNotepads = fs.readdirSync( projectNotepadsPath )
+            projectNotepads = fs.readdirSync( @getProjectNotepadsPath() )
 
             # Return the notepads
             return projectNotepads
 
         ### GET OPEN ###
-        getOpen: ->
+        getOpen: ( openType ) ->
+            # Setup the open type flag, if available otherwise default to all
+            # Flags:
+            #  - all: saved and temp notepads
+            #  - saved: saved notepads only
+            #  - temp: temp notepads only
+            openType ?= "all"
+
             # Setup the return notepads
             openNotepads = []
 
@@ -288,11 +284,121 @@ module.exports =
             for currentEditor in currentEditors
                 # Check if base path of this editor path is same as the project notepads path
                 if path.dirname( currentEditor.getPath() ) is @getProjectNotepadsPath()
-                    # Add this editor object to the open notepads
-                    openNotepads.push path.basename( currentEditor.getPath() )
+                    # Depending on the open type, determine whether to add to open notepads or not
+                    if openType is "all"
+                        # Add this editor object to the open notepads
+                        openNotepads.push path.basename( currentEditor.getPath() )
+                    else if openType is "saved"
+                        # Check if this open notepad is a saved one
+                        if @isNotepadSaved( currentEditor.getPath() ) is true
+                            # The open notepad is a saved notepad, add to open notepads return list
+                            openNotepads.push path.basename( currentEditor.getPath() )
+                    else if openType is "temp"
+                        # Check if this open notepad is an unsaved temp one
+                        if @isNotepadSaved( currentEditor.getPath() ) is false
+                            # The open notepad is a temp notepad, add to open notepads return list
+                            openNotepads.push path.basename( currentEditor.getPath() )
 
             # Return the open notepads
             return openNotepads
+
+        ### PROPERTIES ###
+        ### GET NEW NOTEPAD FILE NAME ###
+        getNewNotepadFileName: ->
+            # Get the saved notepads for the project
+            savedNotepads = @getSaved()
+
+            # Get currently open notepads based on their open type, we only want temp open
+            openTempNotepads = @getOpen( "temp" )
+
+            # Use Cases:
+            #  1 - Currently open unsaved notepad, irrespective of other open/saved notepads
+            #      - Behavior: Switch to open unsaved notepad
+            #  2 - No open unsaved notepads, and no saved notepads either
+            #      Behavior: Open a new notepad starting at 1
+            #  3 - No open unsaved notepads, and saved notepads present
+            #      Behavior: New notepad with next notepad index higher than last saved
+
+            # Use Case: #1
+            if openTempNotepads.length isnt 0
+                # We have an open temp notepad, just switch to that, no need to create one
+                # Let us get the sorted open notepads list
+                sortedOpenTempNotepads = @sortNotepads( openTempNotepads )
+
+                # Set the first notepad as the notepad file
+                notepadFile = sortedOpenTempNotepads[0]
+            else
+                # Use Case: #2
+                if savedNotepads.length is 0
+                    # Start at notepad index 1
+                    notepadFile = "notepad-1"
+                else
+                    # Use Case: #3
+                    if savedNotepads.length > 0
+                        # Let us get the sorted saved notepads in desc order
+                        reverseSortedSavedNotepads = @sortNotepads( savedNotepads, "DESC" )
+
+                        # Set the next index incremented from the first(highest) saved one
+                        notepadFile = "notepad-#{parseInt( reverseSortedSavedNotepads[0].split( "-" )[1] ) + 1}"
+
+            # Return the notepad file we should use
+            return notepadFile
+
+        ### IS NOTEPAD SAVED ###
+        isNotepadSaved: ( notepadFilePath ) ->
+            # Just do a call to fs, and check if path is persisted and exists, and return
+            return fs.existsSync( notepadFilePath )
+
+        ### IS NOTEPAD EMPTY ###
+        isNotepadEmpty: ( notepadFilePath ) ->
+            # Set notepad empty flag to false by default, safer route
+            notepadEmpty = false
+
+            # We want to check and see if a saved notepad is actually empty now, in which case
+            # let us not keep it around (done elsewhere).
+            #
+            # The idea is to check if there is at least one non-whitespace character in the
+            # contents of the notepad file
+            #
+            # Let us read in the contents of the notepad file
+            notepadContents = fs.readFileSync notepadFilePath, { encoding: "utf8" }
+
+            # Let now test to make sure the content is non-empty first, easy check
+            if notepadContents.length is 0
+                # The notepad content is an empty string of length 0, mark as empty
+                notepadEmpty = true
+            else
+                # The notepad content is not an empty string, and has some length
+                if /\S/.test( notepadContents ) is false
+                    # Looks like there is content in the notepad, but none which are non-whitespace
+                    # Marking this as empty as well
+                    notepadEmpty = true
+
+            # Return the notepad empty flag
+            return notepadEmpty
+
+        ### ORDERING ###
+        ### SORT NOTEPADS ###
+        sortNotepads: ( notepadsList, direction ) ->
+            # Get the sorted version of given notepads list
+            sortedNotepads = notepadsList.sort ( x, y ) ->
+                                                    # Get the indexes of the notepads
+                                                    a = parseInt x.split( "-" )[1]
+                                                    b = parseInt y.split( "-" )[1]
+
+                                                    # Return the comparison
+                                                    return a - b
+
+            # Check if we received a direction, if not default it
+            direction ?= "ASC"
+
+            # Check the direction of the sort we want
+            if direction is "ASC"
+                # Return the sorted list as is
+                return sortedNotepads
+            else
+                # Return the reverse of the sorted list in DESC case
+                return sortedNotepads.reverse()
 
         ### PATHS ###
         ### GET PATH ###

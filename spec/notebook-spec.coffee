@@ -213,6 +213,43 @@ describe "Notebook", ->
                     # The content of the notepads should also match exactly
                     expect( atom.workspace.getEditors()[0].getText() ).toEqual( "Saved Notepad" )
 
+        # Opens only saved notepads which have valid content in them - isNotepadEmpty return false
+        it "opens only saved notepads which have valid content - isNotepadEmpty returns false", ->
+            # There should be no open editors at this point
+            expect( atom.workspace.getEditors().length ).toEqual( 0 )
+
+            # Write a note pad file - valid content
+            fs.writeFileSync @notepads.getPath( "notepad-1" ), "Saved Notepad", { encoding: "utf8" }
+
+            # Write a notepad file - invalid/empty content
+            fs.writeFileSync @notepads.getPath( "notepad-2" ), "", { encoding: "utf8" }
+
+            # Wait for package to be activated and functional
+            waitsForPromise =>
+                # Waits for the activation
+                activationPromise
+
+            # Verify that there is one new editor that opened the notepad
+            runs =>
+                # There should be one saved notepad
+                expect( @notepads.getSaved().length ).toEqual( 2 )
+
+                # Open notepads now
+                waitsForPromise =>
+                    # Trigger the notepads open, and use the first one
+                    @notepads.open()[0]
+
+                # Verify that it opened one notepad which was saved earlier
+                runs =>
+                    # At this point we should have a new editor open
+                    expect( atom.workspace.getEditors().length ).toEqual( 1 )
+
+                    # There should be one open notepad at this point for the project
+                    expect( @notepads.getOpen().length ).toEqual( 1 )
+
+                    # The other saved notepad file must be deleted at this point
+                    expect( @notepads.getSaved().length ).toEqual( 1 )
+
     ### CLOSE NOTEPADS ###
     describe "Close Notepads", ->
         ### TEST ###
@@ -249,6 +286,53 @@ describe "Notebook", ->
 
                     # There should be no open notepads at this point for the project
                     expect( @notepads.getOpen().length ).toEqual( 0 )
+
+        # Close all notepad editors/buffers open currently, removing any permanently without
+        # valid non-empty content in them
+        it "closes any open notepad editors/buffers removing any without valid content", ->
+            # There should be no open editors at this point
+            expect( atom.workspace.getEditors().length ).toEqual( 0 )
+
+            # Wait for package to be activated and functional
+            waitsForPromise =>
+                # Waits for the activation
+                activationPromise
+
+            # Verify that there is one new editor that opened the notepad
+            runs =>
+                # Try to open some notepads
+                waitsForPromise =>
+                    # Trigger the open notepads command at this point
+                    @notepads.open()
+
+                # Runs the test to verify
+                runs =>
+                    # At this point we should have a new editor open
+                    expect( atom.workspace.getEditors().length ).toEqual( 1 )
+
+                    # There should be one open notepad at this point for the project
+                    expect( @notepads.getOpen().length ).toEqual( 1 )
+
+                    # Add some content to the notepad editor
+                    atom.workspace.getEditors()[0].setText( "Notepad should get persisted now" )
+
+                    # There should be one saved notepad at this point for the project
+                    expect( @notepads.getSaved().length ).toEqual( 1 )
+
+                    # Reset the content in the notepad to nothing
+                    atom.workspace.getEditors()[0].setText( "" )
+
+                    # Trigger the close notepads
+                    @notepads.close()
+
+                    # There should be no open editors at this point
+                    expect( atom.workspace.getEditors().length ).toEqual( 0 )
+
+                    # There should be no open notepads at this point for the project
+                    expect( @notepads.getOpen().length ).toEqual( 0 )
+
+                    # There should be no saved notepads at this point either
+                    expect( @notepads.getSaved().length ).toEqual( 0 )
 
     ### DELETE NOTEPAD ###
     describe "Delete Notepad", ->

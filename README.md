@@ -27,6 +27,7 @@ apm install notebook
 ```
 Command Palette ➔ Settings View: Install Packages ➔ Notebook
 ```
+
 ## Features
 
 Notepads are stored separately away from your project/workspace files, so there is no issue of having to worry about extra files being around where they are not required.
@@ -42,9 +43,10 @@ A notepad gets persisted only after there has been a content change for the firs
 - [x] Notepads are stored separately away from the project/workspace files, so that they don't interfere
 - [x] Notepads are auto-saved on content change, so  there is no need for manual saves or fear of losing content
 - [x] Get confirmation before `Delete Notepad` & `Purge Notepads` to avoid accidental loss of notepads
-- [x] Automatic migration of your saved notepads from [Protons](https://atom.io/packages/protons) :smile:
+- [x] Empty notepads<sup>[1]</sup> are now handled efficiently and removed silently to keep the notepads storage uncluttered, and number of files minimal as possible. On issuing, either `Open Notepads` or `Close Notepads`, if a notepad is found to be empty, it is deleted and no longer kept around (No worries, you can always get a new notepad with `New Notepad`)
+- [x] _Automatic migration of your saved notepads from [Protons](https://atom.io/packages/protons) :smile:_
 
-_NOTE: At this point, emptying a notepad of its content after it has been saved will not remove it. It has to be manually removed at this point if you no longer want to keep the particular notepad around._
+_[1] - A notepad is considered empty if it has zero content length, or if it has no non-whitespace characters in it_
 
 ## Commands
 
