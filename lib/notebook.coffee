@@ -11,6 +11,13 @@ Notepads = require "./notepads.coffee"
 
 ### EXPORTS ###
 module.exports =
+    ### CONFIGURATION ###
+    configDefaults:
+        # Auto Save
+        autosaveEnabled: true
+        # Auto Remove Empty Notepads
+        removeEmptyNotepadsAutomatically: true
+
     ### ATTRIBUTES ###
     notepads: null
 

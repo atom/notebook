@@ -142,6 +142,34 @@ describe "Notebook", ->
                     # There should be one saved notepad at this point for the project
                     expect( @notepads.getSaved().length ).toEqual( 1 )
 
+        # Content modification in notepad editor should save to disk only if auto save enabled
+        it "content change in notepad buffer/editor should not save if auto-save disabled", ->
+            # Wait for package to be activated and functional
+            waitsForPromise =>
+                # Waits for the activation
+                activationPromise
+
+            # Verify that there is one new editor that opened the notepad
+            runs =>
+                # Set the auto save to false before opening a new notepad
+                @notepads.autosave = false
+
+                # Wait for new notepad to be triggered
+                waitsForPromise =>
+                    # Trigger the new notepad command at this point
+                    @notepads.new()
+
+                # Runs the test to verify
+                runs =>
+                    # At this point we should have a new editor open
+                    expect( atom.workspace.getEditors().length ).toEqual( 1 )
+
+                    # Add some content to the notepad editor
+                    atom.workspace.getEditors()[0].setText( "Notepad no save with auto-save false" )
+
+                    # There should still be 0 saved notepads
+                    expect( @notepads.getSaved().length ).toEqual( 0 )
+
     ### OPEN NOTEPADS ###
     describe "Open Notepads", ->
         ### TEST ###
@@ -192,17 +220,17 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 1 )
 
                 # Open notepads now
-                waitsForPromise =>
+                waitsFor =>
                     # Trigger the notepads open, and use the first one
-                    @notepads.open()[0]
+                    @notepads.open()
 
                 # Verify that it opened one notepad which was saved earlier
                 runs =>
                     # At this point we should have a new editor open
-                    expect( atom.workspace.getEditors().length ).toEqual( 1 )
+                    expect( atom.workspace.getEditors().length ).toBeGreaterThan( 0 )
 
                     # There should be one open notepad at this point for the project
-                    expect( @notepads.getOpen().length ).toEqual( 1 )
+                    expect( @notepads.getOpen().length ).toBeGreaterThan( 0 )
 
                     # But still be the saved notepad
                     expect( @notepads.getSaved().length ).toEqual( 1 )
@@ -235,9 +263,9 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 2 )
 
                 # Open notepads now
-                waitsForPromise =>
+                waitsFor =>
                     # Trigger the notepads open, and use the first one
-                    @notepads.open()[0]
+                    @notepads.open()
 
                 # Verify that it opened one notepad which was saved earlier
                 runs =>
@@ -249,6 +277,40 @@ describe "Notebook", ->
 
                     # The other saved notepad file must be deleted at this point
                     expect( @notepads.getSaved().length ).toEqual( 1 )
+
+        # Opens saved notepads which might not have valid content - auto remove is false
+        it "opens saved notepads even without valid content - when auto remove is false", ->
+            # There should be no open editors at this point
+            expect( atom.workspace.getEditors().length ).toEqual( 0 )
+
+            # Write a notepad file - invalid/empty content
+            fs.writeFileSync @notepads.getPath( "notepad-1" ), "", { encoding: "utf8" }
+
+            # Wait for package to be activated and functional
+            waitsForPromise =>
+                # Waits for the activation
+                activationPromise
+
+            # Verify that there is one new editor that opened the notepad
+            runs =>
+                # Set the auto remove of empty to false
+                @notepads.autoRemoveEmpty = false
+
+                # There should be one saved notepad
+                expect( @notepads.getSaved().length ).toEqual( 1 )
+
+                # Open notepads now
+                waitsFor =>
+                    # Trigger the notepads open
+                    @notepads.open()
+
+                # Verify that it opened one notepad which was saved earlier
+                runs =>
+                    # At this point we should have a new editor open
+                    expect( atom.workspace.getEditors().length ).toBeGreaterThan( 0 )
+
+                    # There should be two open notepads now one without valid content
+                    expect( @notepads.getOpen().length ).toBeGreaterThan( 0 )
 
     ### CLOSE NOTEPADS ###
     describe "Close Notepads", ->
@@ -334,6 +396,57 @@ describe "Notebook", ->
                     # There should be no saved notepads at this point either
                     expect( @notepads.getSaved().length ).toEqual( 0 )
 
+        # Close all notepad editors/buffers open currently, not removing any empty notepads when
+        # auto remove is set to false
+        it "closes any open notepad editors/buffers without removing it when auto remove false", ->
+            # There should be no open editors at this point
+            expect( atom.workspace.getEditors().length ).toEqual( 0 )
+
+            # Wait for package to be activated and functional
+            waitsForPromise =>
+                # Waits for the activation
+                activationPromise
+
+            # Verify that there is one new editor that opened the notepad
+            runs =>
+                # Set the auto remove of empty to false
+                @notepads.autoRemoveEmpty = false
+
+                # Try to open some notepads
+                waitsForPromise =>
+                    # Trigger the open notepads command at this point
+                    @notepads.open()
+
+                # Runs the test to verify
+                runs =>
+                    # At this point we should have a new editor open
+                    expect( atom.workspace.getEditors().length ).toEqual( 1 )
+
+                    # There should be one open notepad at this point for the project
+                    expect( @notepads.getOpen().length ).toEqual( 1 )
+
+                    # Add some content to the notepad editor
+                    atom.workspace.getEditors()[0].setText( "Notepad should get persisted now" )
+
+                    # There should be one saved notepad at this point for the project
+                    expect( @notepads.getSaved().length ).toEqual( 1 )
+
+                    # Reset the content in the notepad to nothing
+                    atom.workspace.getEditors()[0].setText( "" )
+                    atom.workspace.getEditors()[0].save()
+
+                    # Trigger the close notepads
+                    @notepads.close()
+
+                    # There should be no open editors at this point
+                    expect( atom.workspace.getEditors().length ).toEqual( 0 )
+
+                    # There should be no open notepads at this point for the project
+                    expect( @notepads.getOpen().length ).toEqual( 0 )
+
+                    # There should be the one saved notepad even though it is empty
+                    expect( @notepads.getSaved().length ).toEqual( 1 )
+
     ### DELETE NOTEPAD ###
     describe "Delete Notepad", ->
         ### TEST ###
@@ -356,9 +469,9 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 1 )
 
                 # Open notepads now
-                waitsForPromise =>
+                waitsFor =>
                     # Trigger the notepads open, and use the first one
-                    @notepads.open()[0]
+                    @notepads.open()
 
                 # Verify that it opened one notepad which was saved earlier
                 runs =>
@@ -504,9 +617,9 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 2 )
 
                 # Now open the notepads up
-                waitsForPromise =>
+                waitsFor =>
                     # Trigger the open notepads and wait for the last notepad to be open
-                    @notepads.open()[1]
+                    @notepads.open()
 
                 # Verify that we got open notepads
                 runs =>

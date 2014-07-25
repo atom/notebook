@@ -1,5 +1,15 @@
 ## Changelog
 
+### v0.3.0
+
+Package now has configurable settings for a couple of features, as well as some performance tuning.
+
+- Allow configuring auto-save for notepads
+
+- Allow configuring automatic removal of empty notepads
+
+- Hook to `content-modified` event of the notepad editor if auto-save is enabled rather than the `changed` event of the underlying buffer
+
 ### v0.2.0
 
 An update release with some internal modifications & notepad handling:

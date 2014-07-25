@@ -41,9 +41,10 @@ A notepad gets persisted only after there has been a content change for the firs
 - [x] Create as many notepads as you want easily [if you have a large number, the `Open Notepads` command will open all of them!]
 - [x] Notepads are all directly associated with a single project/workspace, and all actions from a particular project window will only affect its own notepads
 - [x] Notepads are stored separately away from the project/workspace files, so that they don't interfere
-- [x] Notepads are auto-saved on content change, so  there is no need for manual saves or fear of losing content
+- [x] Configurable settings for auto-save & automatic removal of empty notepads
+- [x] Notepads are auto-saved (if enabled) on content change, so there is no need for manual saves or fear of losing content
 - [x] Get confirmation before `Delete Notepad` & `Purge Notepads` to avoid accidental loss of notepads
-- [x] Empty notepads<sup>[1]</sup> are now handled efficiently and removed silently to keep the notepads storage uncluttered, and number of files minimal as possible. On issuing, either `Open Notepads` or `Close Notepads`, if a notepad is found to be empty, it is deleted and no longer kept around (No worries, you can always get a new notepad with `New Notepad`)
+- [x] Empty notepads<sup>[1]</sup> are now handled efficiently and removed silently (if enabled) to keep the notepads storage uncluttered, and number of files minimal as possible. On issuing, either `Open Notepads` or `Close Notepads`, if a notepad is found to be empty, it is deleted and no longer kept around (No worries, you can always get a new notepad with `New Notepad`)
 - [x] _Automatic migration of your saved notepads from [Protons](https://atom.io/packages/protons) :smile:_
 
 _[1] - A notepad is considered empty if it has zero content length, or if it has no non-whitespace characters in it_
@@ -64,7 +65,7 @@ ctrl-cmd-n
 ctrl-cmd-o
 ```
 
-> Opens all saved notepads for the current workspace
+> Opens all saved notepads for the current workspace which are not empty (if automatic removal is enabled). If automatic removal is disabled, it will open empty notepads as well
 
 **_Close Notepads_**
 
@@ -72,7 +73,7 @@ ctrl-cmd-o
 ctrl-cmd-x
 ```
 
-> Close all open notepads in the workspace
+> Close all open notepads in the workspace, and deletes empty notepads (if automatic removal is enabled)
 
 **_Delete Notepad_**
 

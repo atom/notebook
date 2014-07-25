@@ -28,6 +28,23 @@ module.exports =
             # Call the setProjectNotepadsPath
             @setProjectNotepadsPath()
 
+            # Do status bar updates only in normal mode, none for spec mode
+            if atom.mode isnt "spec"
+                # Tag on to the status bar path to update notepad paths
+                @pathUpdater = setInterval ( => @updateDisplayPath() ), 5
+
+                # Set the hook for content save
+                @saveHook = "contents-modified"
+            else
+                # Different hook for spec running
+                @saveHook = "changed"
+
+            # Setup auto save configuration
+            @autosave = atom.config.get( "notebook.autosaveEnabled" )
+
+            # Remove empty notepads automatically
+            @autoRemoveEmpty = atom.config.get( "notebook.removeEmptyNotepadsAutomatically" )
+
         ### ACTIONS ###
         ### NEW ###
         new: ->
@@ -66,8 +83,19 @@ module.exports =
                     # Render the notepad editor now
                     atom.workspace.getActivePane().activateItem( notepadEditor )
 
-                    # Auto-save on change
-                    notepadEditor.buffer.on "changed", => @save( notepadEditor )
+                    # Auto-save on change - switch to contents-modified
+                    # Only do auto-save if enabled
+                    if @autosave is true
+                        # Attach save hooks based on atom mode
+                        if atom.mode isnt "spec"
+                            # Do auto-saves on contents being modified
+                            notepadEditor.on "contents-modified", => @save( notepadEditor )
+                        else
+                            # Do auto-saves on contents being modified
+                            notepadEditor.buffer.on "changed", => @save( notepadEditor )
+
+                    # Check for auto removal on destroyed
+                    notepadEditor.buffer.on "destroyed", => @autoRemove( notepadPath )
 
         ### OPEN ###
         open: ->
@@ -76,6 +104,9 @@ module.exports =
 
             # Get the current open Notepads
             openNotepads = @getOpen()
+
+            # Set the opened notepads flag to determine if we might have to do a new notepad
+            notepadsOpened = false
 
             # Make sure we have saved notepads to open
             if savedNotepads.length > 0
@@ -86,27 +117,35 @@ module.exports =
 
                     # Check if this notepad is already open by any chance
                     if notepadFile not in openNotepads
-                        # Let us check here if the notepad has any actual content, we are going to
-                        # clean it up if it has no verifiable content -> non-whitespace characters
-                        # in it, this is to avoid keeping around notepads with empty content, and
-                        # them always opening up on notebook:open-notepads.
-                        #
-                        # This happens only for saved notepads, which are not yet open. If the
-                        # empty saved notepad is already open, we don't touch it and leave it as is
-                        if @isNotepadEmpty( notepadFilePath ) is true
-                            # This is possibly? an empty notepad with no valid content, let us
-                            # not open it, and go one step further and remove it as well to tidy up
-                            # and unclutter the notepads storage
-                            @remove( notepadFilePath )
-                        else
-                            # Open the note pad
+                        # Check for automatic removal
+                        notepadRemoved = @autoRemove( notepadFilePath )
+
+                        # Open the note pad if available - auto remove could remove it potentially
+                        if notepadRemoved is false
+                            # Notepad can be opened up now
                             atom.project.open( notepadFilePath ).then ( notepadEditor ) =>
                                 # Activate the note pad
                                 atom.workspace.getActivePane().activateItem( notepadEditor )
 
-                                # Auto-save on change
-                                notepadEditor.buffer.on "changed", => @save( notepadEditor )
-            else
+                                # Auto-save on change - switch to contents-modified
+                                # Only do auto-save if enabled
+                                if @autosave is true
+                                    # Attach save hooks based on atom mode
+                                    if atom.mode isnt "spec"
+                                        # Do auto-saves on contents being modified
+                                        notepadEditor.on "contents-modified", => @save( notepadEditor )
+                                    else
+                                        # Do auto-saves on contents being modified
+                                        notepadEditor.buffer.on "changed", => @save( notepadEditor )
+
+                                # Check for auto removal on destroyed
+                                notepadEditor.buffer.on "destroyed", => @autoRemove( notepadFilePath )
+
+                            # Set the notepads opened, so that we don't do a new one
+                            notepadsOpened = true
+
+            # If we did not open any notepads, create a new one and open that
+            if notepadsOpened is false
                 # Check if there are unsaved notepad buffers, if there are
                 # just switch to the first one there, don't open another one
                 # If there are no open unsaved notepad buffers, we want to open a new
@@ -127,19 +166,6 @@ module.exports =
                 if path.dirname( currentEditor.getPath() ) is @getProjectNotepadsPath()
                     # Close the item in the pane
                     atom.workspace.getActivePane().destroyItem( currentEditor )
-
-                    # Let us check here if the notepad just closed has any actual content, we are
-                    # going to clean it up if it has no verifiable content -> non-whitespace
-                    # characters in it, this is to avoid keeping around notepads with empty content,
-                    # and them always opening up on notebook:open-notepads.
-                    #
-                    # This happens only for saved notepads, which are not yet open. If the
-                    # empty saved notepad is already open, we don't touch it and leave it as is
-                    if @isNotepadSaved( currentEditor.getPath() ) is true and @isNotepadEmpty( currentEditor.getPath() ) is true
-                        # This is possibly? an empty notepad with no valid content, let us
-                        # not open it, and go one step further and remove it as well to tidy up
-                        # and unclutter the notepads storage
-                        @remove( currentEditor.getPath() )
 
         ### DELETE ###
         delete: ->
@@ -230,13 +256,36 @@ module.exports =
             # Save the notepad
             notepadToSave.save()
 
-            # Update the file path since it reverts from the core at this point
-            @updateDisplayPath()
-
         ### REMOVE ###
         remove: ( notepadFilePath ) ->
-            # Destroy the notepad completely
-            fs.unlinkSync notepadFilePath
+            # Redundancy check to make sure notepad actually exists
+            # If it exists, let us remove
+            if @isNotepadSaved( notepadFilePath ) is true
+                # Destroy the notepad completely
+                fs.unlinkSync notepadFilePath
+
+        ### AUTO REMOVE ###
+        autoRemove: ( notepadFilePath ) ->
+            # Let us check here if the notepad just closed has any actual content, we are
+            # going to clean it up if it has no verifiable content -> non-whitespace
+            # characters in it, this is to avoid keeping around notepads with empty content,
+            # and them always opening up on notebook:open-notepads.
+            #
+            # This happens only for saved notepads, which are not yet open. If the
+            # empty saved notepad is already open, we don't touch it and leave it as is
+            if @isNotepadSaved( notepadFilePath ) is true and @isNotepadEmpty( notepadFilePath ) is true
+                # Check if we have auto remove empty set to true
+                if @autoRemoveEmpty is true
+                    # This is possibly? an empty notepad with no valid content, let us
+                    # not open it, and go one step further and remove it as well to
+                    # tidy up and unclutter the notepads storage
+                    @remove( notepadFilePath )
+
+                    # We have removed the notepad, return true
+                    return true
+
+            # Return false by default
+            return false
 
         ### VIEWS ###
         ### UPDATE DISPLAY PATH ###
