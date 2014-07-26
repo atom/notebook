@@ -291,7 +291,7 @@ module.exports =
             currentActivePaneItem = atom.workspace.getActivePane().getActiveItem()
 
             # Check if we have a notepad file
-            if path.dirname( currentActivePaneItem.getPath() ) is @getProjectNotepadsPath()
+            if path.dirname( currentActivePaneItem?.getPath() ) is @getProjectNotepadsPath()
                 # Check if we have the path updater already working
                 if @pathUpdater is null
                     # We need to start the path updater
