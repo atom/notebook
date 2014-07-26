@@ -47,7 +47,7 @@ module.exports =
         # Setup event handlers
         $( window ).on "ready", =>
             # Attach the event handle for the editor/buffer changes to render notepad paths
-            atom.workspaceView.statusBar?.on "active-buffer-changed", => @notepads.updateDisplayPath()
+            atom.workspaceView.statusBar?.on "active-buffer-changed", => @notepads.activatePathUpdater()
 
     ### DEACTIVATE ###
     deactivate: ->

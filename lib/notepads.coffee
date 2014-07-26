@@ -13,6 +13,7 @@ module.exports =
         storagePath: null
         projectNotepadsPath: null
         currentProject: null
+        pathUpdater: null
 
         ### CONSTRUCTOR ###
         constructor: ( notepadsPath ) ->
@@ -30,9 +31,6 @@ module.exports =
 
             # Do status bar updates only in normal mode, none for spec mode
             if atom.mode isnt "spec"
-                # Tag on to the status bar path to update notepad paths
-                @pathUpdater = setInterval ( => @updateDisplayPath() ), 5
-
                 # Set the hook for content save
                 @saveHook = "contents-modified"
             else
@@ -286,6 +284,25 @@ module.exports =
 
             # Return false by default
             return false
+
+        ### ACTIVATE PATH UPDATER ###
+        activatePathUpdater: ->
+            # Get the current active pane item
+            currentActivePaneItem = atom.workspace.getActivePane().getActiveItem()
+
+            # Check if we have a notepad file
+            if path.dirname( currentActivePaneItem.getPath() ) is @getProjectNotepadsPath()
+                # Check if we have the path updater already working
+                if @pathUpdater is null
+                    # We need to start the path updater
+                    @pathUpdater = setInterval ( => @updateDisplayPath() ), 5
+            else
+                # We are not a notepad related pane item, remove the path updater
+                # Clear the path updater
+                clearTimeout @pathUpdater
+
+                # Set it back to null
+                @pathUpdater = null
 
         ### VIEWS ###
         ### UPDATE DISPLAY PATH ###

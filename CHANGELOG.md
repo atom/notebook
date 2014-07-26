@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.3.1
+
+Minor fix for better handling for status bar notepad paths based on current active pane item.
+
 ### v0.3.0
 
 Package now has configurable settings for a couple of features, as well as some performance tuning.
