@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.3.2
+
+Bug fix release to handle scenarios where there is no active pane item for notepad path handling
+
 ### v0.3.1
 
 Minor fix for better handling for status bar notepad paths based on current active pane item.
