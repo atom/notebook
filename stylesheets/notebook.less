@@ -4,5 +4,26 @@
 // for a full listing of what's available.
 @import "ui-variables";
 
+/** PACKAGE **/
 .notebook {
+    /** CORE **/
+    background-color: #FBF8ED;
+    color: #241309;
+
+    /** IMPORTS **/
+    /** INTERNAL **/
+    // Headers
+    @import "components/headers.less";
+
+    // Dialogs
+    @import "components/dialogs.less";
+}
+
+/** OVERRIDES **/
+.notebook.overlay {
+    background-color: #FBF8ED;
+    border: 1px solid #726756;
+    border-radius: 2px;
+    box-shadow: 0px 0px 10px #726756;
+    color: #241309;
 }

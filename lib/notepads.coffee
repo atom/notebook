@@ -4,7 +4,7 @@ fs = require "fs"
 path = require "path"
 
 # notebook
-SaveNotepadToProjectView = null
+SaveToProjectView = null
 
 ### EXPORTS ###
 module.exports =
@@ -103,9 +103,6 @@ module.exports =
             # Get the current open Notepads
             openNotepads = @getOpen()
 
-            # Set the opened notepads flag to determine if we might have to do a new notepad
-            notepadsOpened = false
-
             # Make sure we have saved notepads to open
             if savedNotepads.length > 0
                 # Loop through them, and open them up
@@ -138,12 +135,7 @@ module.exports =
 
                                 # Check for auto removal on destroyed
                                 notepadEditor.buffer.on "destroyed", => @autoRemove( notepadFilePath )
-
-                            # Set the notepads opened, so that we don't do a new one
-                            notepadsOpened = true
-
-            # If we did not open any notepads, create a new one and open that
-            if notepadsOpened is false
+            else
                 # Check if there are unsaved notepad buffers, if there are
                 # just switch to the first one there, don't open another one
                 # If there are no open unsaved notepad buffers, we want to open a new
@@ -254,6 +246,22 @@ module.exports =
             # Save the notepad
             notepadToSave.save()
 
+        ### SAVE TO PROJECT ###
+        saveToProject: ->
+            # Get the current active pane item
+            currentActivePaneItem = atom.workspace.getActivePane().getActiveItem()
+
+            # Check if we have a notepad file
+            if path.dirname( currentActivePaneItem?.getPath?() ) is @getProjectNotepadsPath()
+                # Create a new save to project dialog view
+                SaveToProjectView ?= require "./views/save-to-project.coffee"
+
+                # Create the view object
+                saveToProjectView = new SaveToProjectView( currentActivePaneItem.getPath() )
+
+                # Attach to the workspace view
+                saveToProjectView.attach()
+
         ### REMOVE ###
         remove: ( notepadFilePath ) ->
             # Redundancy check to make sure notepad actually exists
@@ -291,7 +299,7 @@ module.exports =
             currentActivePaneItem = atom.workspace.getActivePane().getActiveItem()
 
             # Check if we have a notepad file
-            if path.dirname( currentActivePaneItem?.getPath() ) is @getProjectNotepadsPath()
+            if path.dirname( currentActivePaneItem?.getPath?() ) is @getProjectNotepadsPath()
                 # Check if we have the path updater already working
                 if @pathUpdater is null
                     # We need to start the path updater

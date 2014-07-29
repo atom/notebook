@@ -1,7 +1,7 @@
 {
     "name": "notebook",
     "prouctName": "notebook",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "description": "Notebook provides you with effortless note taking & notepads for Atom.",
     "keywords": [
         "notebook",

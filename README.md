@@ -6,13 +6,9 @@ It stores your content separately from your workspace/project so there is no nee
 
 ![Notepad](https://github.com/skulled/notebook/raw/master/docs/assets/images/notepad.png)
 
+![Notepad - Save To Project](https://github.com/skulled/notebook/raw/master/docs/assets/images/notepad-save-to-project.png)
+
 > _Although every effort is made to keep things as stable as possible, please do note that the package is under constant development so there might be occasional bugs. If you run across any issues, please [add an issue](https://github.com/skulled/notebook/issues/new) with the details._
-
-## Migration from Protons
-
-If you had installed [Protons](https://atom.io/packages/protons) earlier, you do not have to worry, just installing Notebook will automatically migrate over any saved notepads from your Protons installation.
-
-You are free to uninstall and remove Protons, once you have installed Notebook.
 
 ## Installation
 
@@ -45,7 +41,7 @@ A notepad gets persisted only after there has been a content change for the firs
 - [x] Notepads are auto-saved (if enabled) on content change, so there is no need for manual saves or fear of losing content
 - [x] Get confirmation before `Delete Notepad` & `Purge Notepads` to avoid accidental loss of notepads
 - [x] Empty notepads<sup>[1]</sup> are now handled efficiently and removed silently (if enabled) to keep the notepads storage uncluttered, and number of files minimal as possible. On issuing, either `Open Notepads` or `Close Notepads`, if a notepad is found to be empty, it is deleted and no longer kept around (No worries, you can always get a new notepad with `New Notepad`)
-- [x] _Automatic migration of your saved notepads from [Protons](https://atom.io/packages/protons) :smile:_
+- [x] Allows for a convenient way to save currently open notepad to the project as part of the project files via the `Save Notepad to Project` command
 
 _[1] - A notepad is considered empty if it has zero content length, or if it has no non-whitespace characters in it_
 
@@ -94,6 +90,16 @@ ctrl-cmd-z
 > Closes any open notepads, and completely deletes all saved notepads for the current workspace
 >
 > **_Action is permanent and all the notepads will be lost forever!_**
+
+**_Save Notepad to Project_**
+
+```
+ctrl-cmd-s
+```
+
+> Quickly save the current open notepad in to the project as part of the project files
+>
+> **_If the current active item/editor is not a notepad, nothing happens_**
 
 ## Feedback & Issues
 

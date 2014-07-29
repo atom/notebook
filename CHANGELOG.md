@@ -1,5 +1,11 @@
 ## Changelog
 
+### v0.4.0
+
+New "Save To Project" feature
+
+- "Save To Project" feature allows for the currently open notepad file to be quickly saved as part of project files
+
 ### v0.3.2
 
 Bug fix release to handle scenarios where there is no active pane item for notepad path handling

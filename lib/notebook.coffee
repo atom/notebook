@@ -13,10 +13,12 @@ Notepads = require "./notepads.coffee"
 module.exports =
     ### CONFIGURATION ###
     configDefaults:
-        # Auto Save
+        # Auto Save - default to true, good to have it this way
         autosaveEnabled: true
-        # Auto Remove Empty Notepads
+        # Auto Remove Empty Notepads - default to true, don't bother keeping empty files around
         removeEmptyNotepadsAutomatically: true
+        # Remove notepads which are saved to project - default to false, notepad still remains
+        removeNotepadOnSavingToProject: false
 
     ### ATTRIBUTES ###
     notepads: null
@@ -38,11 +40,15 @@ module.exports =
     ### INITIALIZE ###
     initialize: ->
         # Setup the commands
+        # Notepad Core Actions
         atom.workspaceView.command "notebook:new-notepad", => @notepads.new()
         atom.workspaceView.command "notebook:open-notepads", => @notepads.open()
         atom.workspaceView.command "notebook:close-notepads", => @notepads.close()
         atom.workspaceView.command "notebook:delete-notepad", => @notepads.delete()
         atom.workspaceView.command "notebook:purge-notepads", => @notepads.purge()
+
+        # Notepad Convenience Actions
+        atom.workspaceView.command "notebook:save-to-project", => @notepads.saveToProject()
 
         # Setup event handlers
         $( window ).on "ready", =>

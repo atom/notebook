@@ -220,9 +220,9 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 1 )
 
                 # Open notepads now
-                waitsFor =>
+                waitsForPromise =>
                     # Trigger the notepads open, and use the first one
-                    @notepads.open()
+                    @notepads.open()[0]
 
                 # Verify that it opened one notepad which was saved earlier
                 runs =>
@@ -263,9 +263,9 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 2 )
 
                 # Open notepads now
-                waitsFor =>
+                waitsForPromise =>
                     # Trigger the notepads open, and use the first one
-                    @notepads.open()
+                    @notepads.open()[0]
 
                 # Verify that it opened one notepad which was saved earlier
                 runs =>
@@ -300,9 +300,9 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 1 )
 
                 # Open notepads now
-                waitsFor =>
+                waitsForPromise =>
                     # Trigger the notepads open
-                    @notepads.open()
+                    @notepads.open()[0]
 
                 # Verify that it opened one notepad which was saved earlier
                 runs =>
@@ -469,9 +469,9 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 1 )
 
                 # Open notepads now
-                waitsFor =>
+                waitsForPromise =>
                     # Trigger the notepads open, and use the first one
-                    @notepads.open()
+                    @notepads.open()[0]
 
                 # Verify that it opened one notepad which was saved earlier
                 runs =>
@@ -617,9 +617,9 @@ describe "Notebook", ->
                 expect( @notepads.getSaved().length ).toEqual( 2 )
 
                 # Now open the notepads up
-                waitsFor =>
+                waitsForPromise =>
                     # Trigger the open notepads and wait for the last notepad to be open
-                    @notepads.open()
+                    @notepads.open()[1]
 
                 # Verify that we got open notepads
                 runs =>

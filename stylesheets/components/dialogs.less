@@ -1,0 +1,103 @@
+// The ui-variables file is provided by base themes provided by Atom.
+//
+// See https://github.com/atom/atom-dark-ui/blob/master/stylesheets/ui-variables.less
+// for a full listing of what's available.
+@import "ui-variables";
+
+/** DIALOG **/
+.dialog {
+    // Header
+    .header {
+        margin-bottom: 15px;
+
+        h3 {
+            border-bottom: 1px solid #A1BA88;
+            padding: 0px 0px 5px 0px;
+        }
+    }
+
+    // Content
+    .content {
+        font-size: 14px;
+        margin-bottom: 15px;
+
+        // Notes
+        .notes {
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        // Form
+        .form {
+            // Label
+            label {
+                font-size: 15px;
+            }
+        }
+    }
+}
+
+/** DIALOG :: SAVE TO PROJECT **/
+.save-to-project {
+    // Header
+    .header {
+        h3 {
+            color: #5D5454;
+            font-size: 18px;
+            font-weight: 600;
+        }
+    }
+
+    // Content
+    .content {
+        margin-bottom: 10px;
+
+        // Notes
+        .notes {
+            font-style: italic;
+
+            // Header
+            h5 {
+                font-size: 13px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+
+            // Content
+            p {
+                margin-bottom: 0px;
+            }
+        }
+
+        // Information Message
+        .notes.info {
+            background-color: #D4EFFF;
+            color: #0079C0;
+            border: 1px solid #0079C0;
+            padding: 5px 5px 5px 5px;
+        }
+
+        // Form
+        .form {
+            // Label
+            label {
+                color: #433D3D;
+            }
+
+            // Field
+            .editor.mini {
+                background-color: #726756;
+                border: 1px solid #5D5454;
+                color: #FBF8ED;
+                padding: 5px 5px 5px 5px;
+            }
+
+            // Errors
+            .error-message {
+                color: #FB1A32;
+                font-size: 13px;
+                font-style: italic
+            }
+        }
+    }
+}

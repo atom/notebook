@@ -10,11 +10,18 @@
     'submenu': [
         'label': 'Notebook'
         'submenu': [
+            # Notepad Core Actions
             { 'label': 'New Notepad', 'command': 'notebook:new-notepad' },
             { 'label': 'Open Notepads', 'command': 'notebook:open-notepads' },
             { 'label': 'Close Notepads', 'command': 'notebook:close-notepads' },
             { 'label': 'Delete Notepad', 'command': 'notebook:delete-notepad' },
-            { 'label': 'Purge Notepads', 'command': 'notebook:purge-notepads' }
+            { 'label': 'Purge Notepads', 'command': 'notebook:purge-notepads' },
+
+            # Separator
+            { type: 'separator' },
+
+            # Notepad Convenience Actions
+            { 'label': 'Save Notepad to Project', 'command': 'notebook:save-to-project' }
         ]
     ]
 } ]

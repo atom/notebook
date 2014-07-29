@@ -8,8 +8,12 @@
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
 '.workspace':
+    # Notepad Core Actions
     'ctrl-cmd-n': 'notebook:new-notepad'
     'ctrl-cmd-o': 'notebook:open-notepads'
     'ctrl-cmd-x': 'notebook:close-notepads'
     'ctrl-cmd-r': 'notebook:delete-notepad'
     'ctrl-cmd-z': 'notebook:purge-notepads'
+
+    # Notepad Convenience Actions
+    'ctrl-cmd-s': 'notebook:save-to-project'
