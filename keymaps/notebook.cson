@@ -7,7 +7,7 @@
 
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
-'.atom-workspace':
+'atom-workspace':
     # Notepad Core Actions
     'ctrl-cmd-n': 'notebook:new-notepad'
     'ctrl-cmd-o': 'notebook:open-notepads'

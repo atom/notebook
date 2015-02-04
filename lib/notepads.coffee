@@ -57,7 +57,7 @@ module.exports =
             notepadAlreadyOpen = false
 
             # Get the current open editors
-            currentEditors = atom.workspace.getEditors()
+            currentEditors = atom.workspace.getTextEditors()
 
             # Find all the open editors and see if they match a notepad path
             # If they match, close out that editor
@@ -87,13 +87,13 @@ module.exports =
                         # Attach save hooks based on atom mode
                         if atom.mode isnt "spec"
                             # Do auto-saves on contents being modified
-                            notepadEditor.on "contents-modified", => @save( notepadEditor )
+                            notepadEditor.onDidStopChanging => @save( notepadEditor )
                         else
                             # Do auto-saves on contents being modified
                             notepadEditor.buffer.on "changed", => @save( notepadEditor )
 
                     # Check for auto removal on destroyed
-                    notepadEditor.buffer.on "destroyed", => @autoRemove( notepadPath )
+                    notepadEditor.buffer.onDidDestroy => @autoRemove( notepadPath )
 
         ### OPEN ###
         open: ->
@@ -128,13 +128,13 @@ module.exports =
                                     # Attach save hooks based on atom mode
                                     if atom.mode isnt "spec"
                                         # Do auto-saves on contents being modified
-                                        notepadEditor.on "contents-modified", => @save( notepadEditor )
+                                        notepadEditor.onDidStopChanging => @save( notepadEditor )
                                     else
                                         # Do auto-saves on contents being modified
                                         notepadEditor.buffer.on "changed", => @save( notepadEditor )
 
                                 # Check for auto removal on destroyed
-                                notepadEditor.buffer.on "destroyed", => @autoRemove( notepadFilePath )
+                                notepadEditor.buffer.onDidDestroy => @autoRemove( notepadFilePath )
             else
                 # Check if there are unsaved notepad buffers, if there are
                 # just switch to the first one there, don't open another one
@@ -146,7 +146,7 @@ module.exports =
         ### CLOSE ###
         close: ->
             # Get the current open editors
-            currentEditors = atom.workspace.getEditors()
+            currentEditors = atom.workspace.getTextEditors()
 
             # Find all the open editors and see if they match a notepad path
             # If they match, close out that editor
@@ -316,7 +316,7 @@ module.exports =
         ### UPDATE DISPLAY PATH ###
         updateDisplayPath: ->
             # Get the status bar file info path object
-            fileInfoElement = atom.workspaceView.find( ".status-bar .file-info .current-path" )
+            fileInfoElement = atom.views.getView( atom.workspace ).find( ".status-bar .file-info .current-path" )
 
             # Make sure we have a valid one
             if fileInfoElement
@@ -350,7 +350,7 @@ module.exports =
             openNotepads = []
 
             # Get the current open editors
-            currentEditors = atom.workspace.getEditors()
+            currentEditors = atom.workspace.getTextEditors()
 
             # We want to get a list of currently opened notepads, even if they
             # aren't saved/persisted

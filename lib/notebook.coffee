@@ -42,20 +42,20 @@ module.exports =
         # Setup the commands
         atom.commands.add "atom-workspace",
             # Notepad Core Actions
-            "notebook:new-notepad": -> @notepads.new()
-            "notebook:open-notepads": -> @notepads.open()
-            "notebook:close-notepads": -> @notepads.close()
-            "notebook:delete-notepad": -> @notepads.delete()
-            "notebook:purge-notepads": -> @notepads.purge()
+            "notebook:new-notepad": => @notepads.new()
+            "notebook:open-notepads": => @notepads.open()
+            "notebook:close-notepads": => @notepads.close()
+            "notebook:delete-notepad": => @notepads.delete()
+            "notebook:purge-notepads": => @notepads.purge()
 
             # Notepad Convenience Actions
-            "notebook:save-to-project": -> @notepads.saveToProject()
+            "notebook:save-to-project": => @notepads.saveToProject()
 
+        #$( window ).on "ready", -> console.log document.querySelector( "status-bar" )
         # Setup event handlers
         $( window ).on "ready", =>
-            console.log document.querySelector( "status-bar" )
             # Attach the event handle for the editor/buffer changes to render notepad paths
-            document.querySelector( "status-bar" )?.on "active-buffer-changed", -> @notepads.activatePathUpdater()
+            document.querySelector( "status-bar" )?.on "active-buffer-changed", => @notepads.activatePathUpdater()
 
     ### DEACTIVATE ###
     deactivate: ->
