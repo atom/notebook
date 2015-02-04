@@ -18,7 +18,7 @@ module.exports =
         ### CONSTRUCTOR ###
         constructor: ( notepadsPath ) ->
             # Setup the current project
-            @currentProject = atom.project.getPath()
+            @currentProject = atom.project.getPaths()[0]
 
             # Setup some paths
             @storagePath = notepadsPath || null

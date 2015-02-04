@@ -4,7 +4,7 @@ fs = require "fs"
 path = require "path"
 
 # atom
-{$} = require "atom"
+{$} = require "atom-space-pen-views"
 
 # notebook
 Notepads = require "./notepads.coffee"
@@ -27,7 +27,7 @@ module.exports =
     activate: ( state ) ->
         # We only want to activate the package if there is a valid project
         # Not handling atom being loaded without a project at this point - TODO
-        if atom.project.getPath()
+        if atom.project.getPaths()[0]
             # Setup the Notepads object
             @notepads = new Notepads()
 
@@ -40,20 +40,22 @@ module.exports =
     ### INITIALIZE ###
     initialize: ->
         # Setup the commands
-        # Notepad Core Actions
-        atom.workspaceView.command "notebook:new-notepad", => @notepads.new()
-        atom.workspaceView.command "notebook:open-notepads", => @notepads.open()
-        atom.workspaceView.command "notebook:close-notepads", => @notepads.close()
-        atom.workspaceView.command "notebook:delete-notepad", => @notepads.delete()
-        atom.workspaceView.command "notebook:purge-notepads", => @notepads.purge()
+        atom.commands.add "atom-workspace",
+            # Notepad Core Actions
+            "notebook:new-notepad": -> @notepads.new()
+            "notebook:open-notepads": -> @notepads.open()
+            "notebook:close-notepads": -> @notepads.close()
+            "notebook:delete-notepad": -> @notepads.delete()
+            "notebook:purge-notepads": -> @notepads.purge()
 
-        # Notepad Convenience Actions
-        atom.workspaceView.command "notebook:save-to-project", => @notepads.saveToProject()
+            # Notepad Convenience Actions
+            "notebook:save-to-project": -> @notepads.saveToProject()
 
         # Setup event handlers
         $( window ).on "ready", =>
+            console.log document.querySelector( "status-bar" )
             # Attach the event handle for the editor/buffer changes to render notepad paths
-            atom.workspaceView.statusBar?.on "active-buffer-changed", => @notepads.activatePathUpdater()
+            document.querySelector( "status-bar" )?.on "active-buffer-changed", -> @notepads.activatePathUpdater()
 
     ### DEACTIVATE ###
     deactivate: ->
