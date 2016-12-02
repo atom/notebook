@@ -31,14 +31,14 @@ module.exports =
             # Setup the Notepads object
             @notepads = new Notepads()
 
-            # Call initialize to setup commands & event handlers
-            @initialize()
+            # Call initializePackage to setup commands & event handlers
+            @initializePackage()
         else
             # Throw an error for the benefit of package manager activePackage
             throw { stack: "- Notebook is active & functional only with a valid project open" }
 
     ### INITIALIZE ###
-    initialize: ->
+    initializePackage: ->
         # Setup the commands
         # Notepad Core Actions
         atom.workspaceView.command "notebook:new-notepad", => @notepads.new()
