@@ -1,4 +1,5 @@
-# Notebook
+##### Atom and all repositories under Atom will be archived on December 15, 2022. Learn more in our [official announcement](https://github.blog/2022-06-08-sunsetting-atom/)
+ # Notebook
 
 Notebook offers you a hassle free way to open up editor windows for note taking/rough usage or saving content for later usage/reference as notepads.
 
